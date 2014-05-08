@@ -1,4 +1,4 @@
-pres&access.vbs (VBScript)
+pres_and_access.vbs (VBScript)
 
 Requires: Microsoft Office 2007+, Windows XP or greater
 
