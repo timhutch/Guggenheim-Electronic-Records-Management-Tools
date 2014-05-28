@@ -74,5 +74,5 @@ WPD -> PDF
 MLM -> PDF
 RTF -> PDF
 
-
+Email contact: libraryandarchives@guggenheim.org
 
