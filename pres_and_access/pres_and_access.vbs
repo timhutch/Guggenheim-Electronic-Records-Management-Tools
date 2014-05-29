@@ -145,7 +145,7 @@ sub ConvFiles (currentDir)
 							oDoc.SaveAs manualNorm  & "\preservation\" & frontPath  & f.name & ".docx", 16 
 				
 							if Err.Number <> 0 then
-								Error_log = Error_log & "Error creating: " & manualNorm  & "\preservation\" & frontPath  & f.name & ".docx" & vbNewline
+								Error_log = Error_log & "Error creating: " & manualNorm  & "\preservation\" & frontPath  & f.name & ".docx" &  " (Description: " & err.description & ")" & vbNewline
 							end if
 					
 							
@@ -156,7 +156,7 @@ sub ConvFiles (currentDir)
 						oDoc.SaveAs manualNorm  & "\access\" & frontPath  & f.name & ".pdf", 17
 					
 						if Err.Number <> 0 then
-							Error_log = Error_log & "Error creating: " & manualNorm  & "\access\" & frontPath  & f.name & ".pdf" & vbNewline
+							Error_log = Error_log & "Error creating: " & manualNorm  & "\access\" & frontPath  & f.name & ".pdf" & " (Description: " & err.description & ")" & vbNewline
 						end if
 						
 						oDoc.Close 0
@@ -172,16 +172,16 @@ sub ConvFiles (currentDir)
 					On Error Resume Next
 					Set oBook = oExcel.Workbooks.Open (f.path)
 					if Err.Number <> 0 then
-						Error_log = Error_log & "Unable to open: " & f.path & vbNewline 
+						Error_log = Error_log & "Unable to open: " & f.path  & " (Description: " & err.description & ")" & vbNewline 
 					else
 					
 						oBook.SaveAs  manualNorm  & "\preservation\" & frontPath & f.name & ".xlsx", 51
 						if Err.Number <> 0 then
-							Error_log = Error_log & "Error creating: " &  manualNorm  & "\preservation\" & frontPath & f.name & ".xlsx" & vbNewline
+							Error_log = Error_log & "Error creating: " &  manualNorm  & "\preservation\" & frontPath & f.name & ".xlsx" & " (Description: " & err.description & ")" & vbNewline
 						end if
 						oBook.SaveAs  manualNorm  & "\access\" & frontPath & f.name & ".xlsx",51					
 						if Err.Number <> 0 then
-							Error_log = Error_log & "Error creating: " &  manualNorm  & "\access\" & frontPath & f.name & ".xlsx" & vbNewline
+							Error_log = Error_log & "Error creating: " &  manualNorm  & "\access\" & frontPath & f.name & ".xlsx" & " (Description: " & err.description & ")" & vbNewline
 						end if
 		
 
@@ -204,20 +204,20 @@ sub ConvFiles (currentDir)
 					Set oPPT = oPPT.Presentations.Open(f.path, , True)
 					
 					if Err.Number <> 0 then
-						Error_log = Error_log & "Unable to open: " & f.path & vbNewline 
+						Error_log = Error_log & "Unable to open: " & f.path & " (Description: " & err.description & ")" & vbNewline 
 					else
 					
 						' create pdf
 						oPPT.SaveAs manualNorm  & "\access\" & frontPath & f.name & ".pdf", 32
 						
 						if Err.Number <> 0 then
-							Error_log = Error_log & "Error creating: " & manualNorm  & "\access\" & frontPath & f.name & ".pdf" & vbNewline
+							Error_log = Error_log & "Error creating: " & manualNorm  & "\access\" & frontPath & f.name & ".pdf" & " (Description: " & err.description & ")" & vbNewline
 						end if
 					
 						if (NOT ext = "pptx") then ' don't create PPTX if already PPTX
 							oPPT.SaveAs manualNorm & "\preservation\" & frontPath  & f.name & ".pptx", 24
 							if Err.Number <> 0 then
-								Error_log = Error_log & "Error creating: " & manualNorm & "\preservation\" & frontPath  & f.name & ".pptx" & vbNewline
+								Error_log = Error_log & "Error creating: " & manualNorm & "\preservation\" & frontPath  & f.name & ".pptx" & " (Description: " & err.description & ")" & vbNewline
 							end if
 						end if
 						oPPT.Close 
@@ -232,10 +232,9 @@ sub ConvFiles (currentDir)
 				end if
 				
 				masterCount = masterCount + 1
-			
-			
+				
 			end if
-		
+			
 		end if
 
 	next 
