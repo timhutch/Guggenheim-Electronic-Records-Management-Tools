@@ -217,7 +217,7 @@ sub ConvFiles (currentDir)
 						if (NOT ext = "pptx") then ' don't create PPTX if already PPTX
 							oPPT.SaveAs manualNorm & "\preservation\" & frontPath  & f.name & ".pptx", 24
 							if Err.Number <> 0 then
-								Error_log = Error_log &  manualNorm & "\preservation\" & frontPath  & f.name & ".pptx" & vbNewline
+								Error_log = Error_log & "Error creating: " & manualNorm & "\preservation\" & frontPath  & f.name & ".pptx" & vbNewline
 							end if
 						end if
 						oPPT.Close 
