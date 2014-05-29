@@ -32,7 +32,7 @@
 Option Explicit
 
 Dim zSourceDir
-Dim oWord, FSO, masterCount, oPPT, oExcel, oBook, ext, folder, stringi 
+Dim oWord, FSO, masterCount, oPPT, oExcel, oBook, ext, folder, stringi, error_log, ofile
 Dim manualNorm
 
 
@@ -56,6 +56,7 @@ zSourceDir = folder.Path
 Set oWord = CreateObject("Word.Application")
 
 masterCount = 0
+error_log = ""
 
 ConvFiles (zSourceDir)
 
@@ -125,93 +126,107 @@ sub ConvFiles (currentDir)
 				subCreateFolders manualNorm & "\access\" & frontPath
 				
 				
-				if ext  = "wpd" OR ext = "mlm" OR ext  = "doc"  then
+				if ext  = "wpd" OR ext = "mlm" OR ext  = "doc" or ext = "docx" or ext = "rtf" then
 				
+					On Error Resume Next
 					Set oDoc = oWord.Documents.Open(f.path, , True)
-					Set oDoc = oWord.ActiveDocument
-				
-				
-					' create docx
-				
-					oDoc.SaveAs manualNorm  & "\preservation\" & frontPath  & f.name & ".docx", 16 
-				
-					' create pdf
-					oDoc.SaveAs manualNorm  & "\access\" & frontPath  & f.name & ".pdf", 17
-				
 					
-		
-					oDoc.Close 0
-					Set oDoc = Nothing
-				else if (ext = "docx" OR ext = "rtf") then
 				
-			
-					'on error resume next
-					'FSO.CopyFile f.path, manualNorm  & "\preservation\" & frontPath  & f.name, true
-					'on error goto 0
+					if Err.number <> 0 then
+						Error_log = Error_log & "Unable to open: " & f.path & " (Description: " & err.description & ")" & vbNewline 
+						Set oDoc = Nothing
+						
+					else
+						Set oDoc = oWord.ActiveDocument
+						
+						' create docx - skip if already DOCX or RTF
+						if NOT (ext = "rtf" or ext = "docx") then				
+							
+							oDoc.SaveAs manualNorm  & "\preservation\" & frontPath  & f.name & ".docx", 16 
 				
+							if Err.Number <> 0 then
+								Error_log = Error_log & "Error creating: " & manualNorm  & "\preservation\" & frontPath  & f.name & ".docx" & vbNewline
+							end if
+					
+							
+						end if
 				
-					Set oDoc = oWord.Documents.Open(f.path, , True)
-					Set oDoc = oWord.ActiveDocument			
+						
+						' create pdf
+						oDoc.SaveAs manualNorm  & "\access\" & frontPath  & f.name & ".pdf", 17
+					
+						if Err.Number <> 0 then
+							Error_log = Error_log & "Error creating: " & manualNorm  & "\access\" & frontPath  & f.name & ".pdf" & vbNewline
+						end if
+						
+						oDoc.Close 0
+						Set oDoc = Nothing
+					end if
 				
-					' create pdf
-					oDoc.SaveAs manualNorm  & "\access\" & frontPath & f.name & ".pdf", 17
-				
-		
-					oDoc.Close 0
-					Set oDoc = Nothing
-
+					On Error GoTo 0
+					
 				else if ext = "xls" then
 					Set oExcel = CreateObject("Excel.Application")
 					
-					Set oBook = oExcel.Workbooks.Open (f.path)
 					
-					oBook.SaveAs  manualNorm  & "\preservation\" & frontPath & f.name & ".xlsx", 51
-					oBook.SaveAs  manualNorm  & "\access\" & frontPath & f.name & ".xlsx",51					
+					On Error Resume Next
+					Set oBook = oExcel.Workbooks.Open (f.path)
+					if Err.Number <> 0 then
+						Error_log = Error_log & "Unable to open: " & f.path & vbNewline 
+					else
+					
+						oBook.SaveAs  manualNorm  & "\preservation\" & frontPath & f.name & ".xlsx", 51
+						if Err.Number <> 0 then
+							Error_log = Error_log & "Error creating: " &  manualNorm  & "\preservation\" & frontPath & f.name & ".xlsx" & vbNewline
+						end if
+						oBook.SaveAs  manualNorm  & "\access\" & frontPath & f.name & ".xlsx",51					
+						if Err.Number <> 0 then
+							Error_log = Error_log & "Error creating: " &  manualNorm  & "\access\" & frontPath & f.name & ".xlsx" & vbNewline
+						end if
 		
-					oBook.Close 0
+
+						oBook.Close 0
+					
+					end if
+					On Error Goto 0
+					
 					Set oBook = Nothing
 					oExcel.Quit
 					Set oExcel = Nothing
 			
-				else if (ext = "ppt") then
+				else if (ext = "ppt" or ext = "pptx") then
 			
+					
 					Set oPPT = CreateObject("Powerpoint.Application")
 					oPPT.visible = true
 				
+					On Error Resume Next 
 					Set oPPT = oPPT.Presentations.Open(f.path, , True)
 					
-				
-					' create pdf
-					oPPT.SaveAs manualNorm  & "\access\" & frontPath & f.name & ".pdf", 32
-					oPPT.SaveAs manualNorm & "\preservation\" & frontPath  & f.name & ".pptx", 24
-				
+					if Err.Number <> 0 then
+						Error_log = Error_log & "Unable to open: " & f.path & vbNewline 
+					else
+					
+						' create pdf
+						oPPT.SaveAs manualNorm  & "\access\" & frontPath & f.name & ".pdf", 32
+						
+						if Err.Number <> 0 then
+							Error_log = Error_log & "Error creating: " & manualNorm  & "\access\" & frontPath & f.name & ".pdf" & vbNewline
+						end if
+					
+						if (NOT ext = "pptx") then ' don't create PPTX if already PPTX
+							oPPT.SaveAs manualNorm & "\preservation\" & frontPath  & f.name & ".pptx", 24
+							if Err.Number <> 0 then
+								Error_log = Error_log &  manualNorm & "\preservation\" & frontPath  & f.name & ".pptx" & vbNewline
+							end if
+						end if
+						oPPT.Close 
+					end if 
+					
+					On Error GoTo 0
 		
-					oPPT.Close 
 					
 					Set oPPT = Nothing
-				else if (lcase(FSO.GetExtensionName(f.path)) = "pptx") then
-			
-					Set oPPT = CreateObject("Powerpoint.Application")
-					oPPT.visible = true
-
-				
-					'on error resume next
-					'FSO.CopyFile f.path, manualNorm  & "\preservation\" & frontPath  & f.name, true
-					'on error goto 0
-				
-					Set oPPT = oPPT.Presentations.Open(f.path, , True)
-					
-				
-					' create pdf
-					oPPT.SaveAs manualNorm  & "\access\" & frontPath & f.name & ".pdf", 32
-				
-		
-					oPPT.Close 
-					
-					Set oPPT = Nothing
-			
-				end if
-				end if
 				end if
 				end if
 				end if
@@ -248,11 +263,21 @@ Sub subCreateFolders(strPath)
 End Sub
 
 
-Set FSO = Nothing
 oWord.Quit
 Set oWord = Nothing
 
-MsgBox "Creation of normalized files are completed.  " & masterCount & " files were normalized."
+
+if error_log = "" then
+	MsgBox "Creation of normalized files are completed.  " & masterCount & " files were normalized."
+else
+	Set ofile = fso.OpenTextFile ("pres_and_access.log", 2, true)
+	ofile.writeline error_log
+	ofile.close
+	Set ofile = Nothing
+	Set fso = Nothing
+
+	MsgBox masterCount & " Files were attempted to be normalized, but there was an error with one or more.  These are included in the log file: pres_and_access.log"
+end if
 
 
 
